@@ -1,0 +1,149 @@
+\documentclass{article}
+
+
+% if you need to pass options to natbib, use, e.g.:
+%     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2024
+
+
+% ready for submission
+\usepackage{neurips_2024}
+
+
+% to compile a preprint version, e.g., for submission to arXiv, add add the
+% [preprint] option:
+%     \usepackage[preprint]{neurips_2024}
+
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+%     \usepackage[final]{neurips_2024}
+
+
+% to avoid loading the natbib package, add option nonatbib:
+%    \usepackage[nonatbib]{neurips_2024}
+
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{xcolor}         % colors
+
+\usepackage{orcidlink}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{graphicx}
+\usepackage{booktabs}
+
+\title{Balanced, Communication Efficient Federated Learning using Variable Dropout and Model Compression}
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to break the
+% lines. Using \AND forces a line break at that point. So, if LaTeX puts 3 of 4
+% authors names on the first line, and the last on the second line, try using
+% \AND instead of \And before the third author name.
+
+
+\author{%
+  David S.~Hippocampus\thanks{Use footnote for providing further information
+    about author (webpage, alternative address)---\emph{not} for acknowledging
+    funding agencies.} \\
+  Department of Computer Science\\
+  Cranberry-Lemon University\\
+  Pittsburgh, PA 15213 \\
+  \texttt{hippo@cs.cranberry-lemon.edu} \\
+  % examples of more authors
+  % \And
+  % Coauthor \\
+  % Affiliation \\
+  % Address \\
+  % \texttt{email} \\
+  % \AND
+  % Coauthor \\
+  % Affiliation \\
+  % Address \\
+  % \texttt{email} \\
+  % \And
+  % Coauthor \\
+  % Affiliation \\
+  % Address \\
+  % \texttt{email} \\
+  % \And
+  % Coauthor \\
+  % Affiliation \\
+  % Address \\
+  % \texttt{email} \\
+}
+
+
+\begin{document}
+
+
+\maketitle
+
+
+\begin{abstract}
+
+Federated learning is used to train deep learning models over over heterogeneous and decentralized datasets. Communication between client and server can be a major bottleneck for Federated learning, specially in case of large models. More over there is often data imbalance issue in real world Fl problems. 
+
+To address the above mentioned issues we propose a novel balanced communication efficient federated learning strategy. Our strategy is based on two key strategies : 1. A variable federated dropout on client models to address both communication bottleneck and data imbalance. 2. Compression to improve communication efficiency. We empirically show that the combination of these two strategies improve communication strategy while improving the accuracy of the model on several data set and experimental settings. The code can be found at anonymous.
+
+\end{abstract}
+
+
+\section{Introduction}
+
+Motivation for Federated Learning: 
+
+Begin with the increasing need for federated learning in training deep learning models over decentralized and heterogeneous datasets. Highlight the importance of data privacy and the unique challenges presented by decentralized data.
+
+Challenges in Federated Learning: 
+
+Discuss the primary challenges in federated learning, focusing on communication bottlenecks, especially with large models, and the issue of data imbalance across clients.
+
+Proposed Solution Overview: 
+
+Introduce your novel federated learning strategy, emphasizing its balanced and communication-efficient approach. Mention how it addresses both the communication bottleneck and data imbalance through variable federated dropout and model compression.
+
+Contributions of This Work: 
+
+List the key contributions, such as the development of a novel strategy to improve communication efficiency and accuracy in federated learning, empirical validation of your approach across various datasets and settings, and the potential impact on the field.
+
+\section{Related Work}
+
+Foundations of Federated Learning: Briefly review the origins of federated learning, key developments, and foundational principles that underpin this research area.
+
+Communication Efficiency in Federated Learning: Survey existing approaches aimed at reducing communication overhead, including model compression, quantization, and efficient aggregation methods.
+
+Addressing Data Imbalance: Discuss previous methods proposed to tackle data imbalance in federated settings, highlighting their strengths and limitations.
+
+Variable Dropout Techniques: Review literature related to dropout methods, particularly in federated learning or decentralized environments, and how they've been used to enhance model training and generalization.
+
+Gaps in Existing Literature: Conclude with a brief discussion on the gaps your work aims to fill, particularly emphasizing the lack of solutions that simultaneously address communication efficiency and data imbalance with a unified approach.
+
+
+\section{Method}
+
+Overview of the Proposed Strategy: Provide a high-level description of your federated learning strategy, including the rationale behind combining variable dropout and model compression.
+
+Variable Federated Dropout: Detail the mechanism of variable federated dropout, including how it's applied within client models to mitigate data imbalance and reduce communication needs.
+
+Model Compression: Explain the model compression technique used, focusing on how it reduces model size and enhances communication efficiency without significantly impacting accuracy.
+
+Integration into Federated Learning Framework: Describe how these strategies are integrated into the federated learning process, from local model updates to aggregation on the server.
+
+\section{Results}
+
+\section{Conclusion}
+
+\end{document}
