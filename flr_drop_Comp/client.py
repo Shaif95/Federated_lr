@@ -1,7 +1,8 @@
 import flwr as fl
 import tensorflow as tf
 import json
-
+import tensorflow as tf
+from tensorflow_model_optimization.sparsity import keras as sparsity
 import tensorflow as tf
 
 def create_model(dropout_rate=0.5):
@@ -29,10 +30,17 @@ class CifarClient(fl.client.NumPyClient):
         self.model = create_model(self.dropout_rate)  # Initialize the model here
 
     def get_parameters(self, config):
-        return self.model.get_weights()
+        compressed_weights = [w.astype('float16') for w in self.model.get_weights()]
+        return compressed_weights
 
     def fit(self, parameters, config):
-        self.model.set_weights(parameters)
+        decompressed_weights = [w.astype('float32') for w in parameters]
+        self.model.set_weights(decompressed_weights)
+
+        # Update pruning step
+        callbacks = [sparsity.UpdatePruningStep()]
+
+        history = self.model.fit(x_train, y_train, epochs=5, batch_size=32, steps_per_epoch=3, callbacks=callbacks)
 
         if len(self.acc_list) > 0:
             current_first_accuracy = self.acc_list[-1]
@@ -53,7 +61,8 @@ class CifarClient(fl.client.NumPyClient):
         return self.model.get_weights(), len(x_train), {}
 
     def evaluate(self, parameters, config):
-        self.model.set_weights(parameters)
+        decompressed_weights = [w.astype('float32') for w in parameters]
+        self.model.set_weights(decompressed_weights)
         loss, accuracy = self.model.evaluate(x_test, y_test, verbose=0)
         return loss, len(x_test), {"accuracy": float(accuracy)}
 
