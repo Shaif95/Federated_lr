@@ -10,7 +10,6 @@ def create_model(dropout_rate=0.5):
     x = tf.keras.layers.Conv2D(filters=32, kernel_size=(3, 3), activation="relu")(x)
     x = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(x)
     x = tf.keras.layers.Flatten()(x)
-    x = tf.keras.layers.Dropout(.5)(x)
     x = tf.keras.layers.Dense(128, activation="relu")(x)
     outputs = tf.keras.layers.Dense(10, activation="softmax")(x)
     model = tf.keras.Model(inputs=inputs, outputs=outputs)
@@ -23,7 +22,7 @@ class CifarClient(fl.client.NumPyClient):
         super().__init__()
         self.acc_list = []  # Initialize acc_list within the class
         self.dropout_rate = .5
-        self.model = create_model(self.dropout_rate)  # Initialize the self.model here
+        self.model = create_model()  # Initialize the self.model here
     
     def get_parameters(self, config):
         # Return self.model parameters as a list of NumPy ndarrays
@@ -32,10 +31,10 @@ class CifarClient(fl.client.NumPyClient):
     def fit(self, parameters, config):
         # Set self.model parameters, train self.model, return updated self.model parameters
         self.model.set_weights(parameters)
-        history = self.model.fit(x_train, y_train, epochs=5, batch_size=32, steps_per_epoch=3)
+        history = self.model.fit(x_train, y_train, epochs=5, batch_size=32, steps_per_epoch=3, validation_split=0.2)
         
         # Append accuracy values to acc_list
-        self.acc_list.extend(history.history['accuracy'])
+        self.acc_list.extend(history.history['val_accuracy'])
 
         with open("client_accuracy.json", "w") as f:
             json.dump(self.acc_list, f)

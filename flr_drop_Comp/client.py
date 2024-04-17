@@ -10,13 +10,15 @@ def create_model(dropout_rate=0.5):
     x = tf.keras.applications.mobilenet_v2.preprocess_input(inputs)
     x = tf.keras.layers.Conv2D(filters=32, kernel_size=(3, 3), activation="relu")(x)
     x = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(x)
-    x = tf.keras.layers.Flatten()(x)
     x = tf.keras.layers.Dropout(dropout_rate)(x)
+    x = tf.keras.layers.Flatten()(x)
     x = tf.keras.layers.Dense(128, activation="relu")(x)
     outputs = tf.keras.layers.Dense(10, activation="softmax")(x)
     model = tf.keras.Model(inputs=inputs, outputs=outputs)
     model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
     return model
+
+
 
 # Load CIFAR-10 dataset
 (x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()
@@ -37,6 +39,26 @@ class CifarClient(fl.client.NumPyClient):
         # Set the model's weights
         self.model.set_weights(parameters)
 
+
+        history = self.model.fit(x_train, y_train, epochs=5, batch_size=32, steps_per_epoch=3, validation_split=0.2)
+
+        # Update dropout rate and record accuracy
+        if len(self.acc_list) > 0:
+            current_first_accuracy = self.acc_list[-1]
+            if current_first_accuracy > self.last_round_last_accuracy:
+                self.dropout_rate = max(0.1, self.dropout_rate + 0.05)
+            else:
+                self.dropout_rate = min(0.9, self.dropout_rate - 0.05)
+
+        #history = self.model.fit(x_train, y_train, epochs=5, batch_size=32, steps_per_epoch=3, validation_split=0.2)
+        self.acc_list.extend(history.history['val_accuracy'])
+
+        # Save accuracy to file
+        with open("client_accuracy.json", "w") as f:
+            json.dump(self.acc_list, f)
+        
+        self.last_round_last_accuracy = history.history['val_accuracy'][-1]
+
         # Perform model quantization
         converter = tf.lite.TFLiteConverter.from_keras_model(self.model)
         converter.optimizations = [tf.lite.Optimize.DEFAULT]
@@ -45,27 +67,6 @@ class CifarClient(fl.client.NumPyClient):
         # Save the quantized model to a file
         with open("quantized_model.tflite", "wb") as f:
             f.write(quantized_tflite_model)
-
-        # Update pruning step (if necessary)
-        callbacks = [sparsity.UpdatePruningStep()]
-        history = self.model.fit(x_train, y_train, epochs=5, batch_size=32, steps_per_epoch=3, callbacks=callbacks)
-
-        # Update dropout rate and record accuracy
-        if len(self.acc_list) > 0:
-            current_first_accuracy = self.acc_list[-1]
-            if current_first_accuracy > self.last_round_last_accuracy:
-                self.dropout_rate = max(0.3, self.dropout_rate - 0.05)
-            else:
-                self.dropout_rate = min(0.7, self.dropout_rate + 0.05)
-
-        history = self.model.fit(x_train, y_train, epochs=5, batch_size=32, steps_per_epoch=3)
-        self.acc_list.extend(history.history['accuracy'])
-
-        # Save accuracy to file
-        with open("client_accuracy.json", "w") as f:
-            json.dump(self.acc_list, f)
-        
-        self.last_round_last_accuracy = history.history['accuracy'][-1]
 
         return self.model.get_weights(), len(x_train), {}
 

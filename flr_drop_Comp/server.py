@@ -11,7 +11,7 @@ class SaveMetricsStrategy(fl.server.strategy.FedAvg):
 
 # Start Flower server with enhanced logging
 strategy = SaveMetricsStrategy()
-server_config = fl.server.ServerConfig(num_rounds=50)  # Create ServerConfig object
+server_config = fl.server.ServerConfig(num_rounds=10)  # Create ServerConfig object
 
 fl.server.start_server(
     server_address="0.0.0.0:8080", 
