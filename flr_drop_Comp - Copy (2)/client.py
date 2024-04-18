@@ -9,14 +9,18 @@ def create_model(dropout_rate=0.5):
     inputs = tf.keras.Input(shape=(32, 32, 3))
     x = tf.keras.applications.mobilenet_v2.preprocess_input(inputs)
     x = tf.keras.layers.Conv2D(filters=32, kernel_size=(3, 3), activation="relu")(x)
+    x = tf.keras.layers.Dropout(dropout_rate)(x)
     x = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(x)
     x = tf.keras.layers.Dropout(dropout_rate)(x)
     x = tf.keras.layers.Flatten()(x)
+    x = tf.keras.layers.Dropout(dropout_rate)(x)
     x = tf.keras.layers.Dense(128, activation="relu")(x)
     outputs = tf.keras.layers.Dense(10, activation="softmax")(x)
     model = tf.keras.Model(inputs=inputs, outputs=outputs)
     model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
     return model
+
+
 
 # Load CIFAR-10 dataset
 (x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()

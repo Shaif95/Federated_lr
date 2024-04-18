@@ -78,6 +78,7 @@ class CifarClient(fl.client.NumPyClient):
         super().__init__()
         self.acc_list = []
         self.f1_list = []
+        self.dropouts = []
         self.dropout_rate = initial_dropout_rate
         self.last_round_last_accuracy = 0
         self.model = create_model(self.dropout_rate)  # Initialize the model here
@@ -93,20 +94,23 @@ class CifarClient(fl.client.NumPyClient):
 
         history = self.model.fit(x_train, y_train, epochs=5, batch_size=32, steps_per_epoch=3, validation_split=0.2)
 
+        self.acc_list.extend(history.history['val_accuracy'])
         # Update dropout rate and record accuracy
         if len(self.acc_list) > 0:
             current_first_accuracy = self.acc_list[-1]
             if current_first_accuracy > self.last_round_last_accuracy:
-                self.dropout_rate = max(0.1, self.dropout_rate + 0.05)
+                self.dropout_rate = min(0.9, self.dropout_rate + 0.05)
             else:
-                self.dropout_rate = min(0.9, self.dropout_rate - 0.05)
+                self.dropout_rate = max(0.1, self.dropout_rate - 0.05)
 
-        #history = self.model.fit(x_train, y_train, epochs=5, batch_size=32, steps_per_epoch=3, validation_split=0.2)
-        self.acc_list.extend(history.history['val_accuracy'])
+        self.dropouts.append(self.dropout_rate)
 
         # Save accuracy to file
         with open("client_accuracy.json", "w") as f:
             json.dump(self.acc_list, f)
+
+        with open("dropout_rate.json", "w") as fa:
+            json.dump(self.dropouts, fa)
         
         self.last_round_last_accuracy = history.history['val_accuracy'][-1]
 
