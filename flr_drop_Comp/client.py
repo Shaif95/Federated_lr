@@ -15,9 +15,9 @@ def create_model(dropout_rate=0.5):
     x = tf.keras.layers.Flatten()(x)
     x = tf.keras.layers.Dropout(dropout_rate)(x)
     x = tf.keras.layers.Dense(1000, activation="relu")(x)
-    x = tf.keras.layers.Dropout(dropout_rate)(x)
+    #x = tf.keras.layers.Dropout(dropout_rate)(x)
     x = tf.keras.layers.Dense(500, activation="relu")(x)
-    x = tf.keras.layers.Dropout(dropout_rate)(x)
+    #x = tf.keras.layers.Dropout(dropout_rate)(x)
     x = tf.keras.layers.Dense(100, activation="relu")(x)
     outputs = tf.keras.layers.Dense(10, activation="softmax")(x)
     model = tf.keras.Model(inputs=inputs, outputs=outputs)
@@ -42,6 +42,13 @@ class CifarClient(fl.client.NumPyClient):
     def get_parameters(self, config):
         # Return the model's weights
         return self.model.get_weights()
+
+    def representative_dataset_gen(self):
+        for sample in x_train[:1000]:
+            # Preprocess the input data to match the expected format
+            sample = sample.astype('float32') / 255.0  # Normalize the pixel values to [0, 1]
+            sample = tf.expand_dims(sample, axis=0)  # Add batch dimension
+            yield [sample]
 
     def fit(self, parameters, config):
         # Set the model's weights
@@ -70,18 +77,15 @@ class CifarClient(fl.client.NumPyClient):
 
         with open("dropout_rate.json", "w") as fa:
             json.dump(self.dropouts, fa)
-        
-        
-        self.last_round_last_accuracy = history.history['val_accuracy'][-1]
 
-        # Perform model quantization
         converter = tf.lite.TFLiteConverter.from_keras_model(self.model)
         converter.optimizations = [tf.lite.Optimize.DEFAULT]
+        converter.target_spec.supported_types = [tf.int8]  # Use int8 quantization
+        converter.representative_dataset = self.representative_dataset_gen
         quantized_tflite_model = converter.convert()
 
-        # Save the quantized model to a file
-        with open("quantized_model.tflite", "wb") as f:
-            f.write(quantized_tflite_model)
+        
+        self.last_round_last_accuracy = history.history['val_accuracy'][-1]
 
         return self.model.get_weights(), len(x_train), {}
 
