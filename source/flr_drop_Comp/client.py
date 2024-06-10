@@ -27,7 +27,13 @@ def create_model(dropout_rate=0.5):
 # Load CIFAR-10 dataset
 (x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()
 
+# Helper function to quantize weights to float16
+def quantize(weights):
+    return weights.astype(np.float16)
 
+# Helper function to dequantize weights back to float32
+def dequantize(weights):
+    return weights.astype(np.float32)
 
 class CifarClient(fl.client.NumPyClient):
     def __init__(self, initial_dropout_rate=0.5):
@@ -40,15 +46,14 @@ class CifarClient(fl.client.NumPyClient):
         self.model = create_model(self.dropout_rate)  # Initialize the model here
 
     def get_parameters(self, config):
-        # Return the model's weights
-        return self.model.get_weights()
+        # Quantize parameters before sending to the server
+        return [quantize(w) for w in self.model.get_weights()]
 
-    def representative_dataset_gen(self):
-        for sample in x_train[:1000]:
-            # Preprocess the input data to match the expected format
-            sample = sample.astype('float32') / 255.0  # Normalize the pixel values to [0, 1]
-            sample = tf.expand_dims(sample, axis=0)  # Add batch dimension
-            yield [sample]
+    def set_parameters(self, parameters):
+        # Dequantize parameters received from the server
+        params = [quantize(np.array(w, dtype=np.float32)) for w in parameters]
+        float32_parameters = [dequantize(np.array(w)) for w in params]
+        self.model.set_weights(float32_parameters)
 
     def fit(self, parameters, config):
         # Set the model's weights
