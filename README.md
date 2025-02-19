@@ -1,4 +1,4 @@
-# Flower Implementation of "ACFed: Communication-Efficient & Class-Balancing Federated Learning with Adaptive Consensus Dropout & Model Quantization"
+# Flower Implementation of "ACFed: Communication-Efficient & Class-Balancing Federated Learning with Adaptive Consensus Dropout & Model Quantization" (IEEE BigData)
 
 # Federated_lr
 
